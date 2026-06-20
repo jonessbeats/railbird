@@ -19,12 +19,27 @@ export function revealPercent(entry: ApiLeaderboardEntry): number {
 // Build PetSnapshot from leaderboard entry + optional pet stats
 // leaderboard is the primary source for rarity/faction/gender/ELO/stat ranges
 // pet stats add win/podium counts for win-rate signal
+// Can also accept just ApiPetStats for minimal snapshot (with default unknown values)
 export function buildPetSnapshot(
-  lb: ApiLeaderboardEntry,
+  lbOrStats: ApiLeaderboardEntry | ApiPetStats,
   stats?: ApiPetStats,
 ): PetSnapshot {
+  // Detect if first arg is leaderboard entry or stats
+  const isLeaderboardEntry = 'elo' in lbOrStats && 'rarity' in lbOrStats && 'faction' in lbOrStats
+
+  let lb: ApiLeaderboardEntry | null = null
+  let petStats: ApiPetStats | undefined
+
+  if (isLeaderboardEntry) {
+    lb = lbOrStats as ApiLeaderboardEntry
+    petStats = stats
+  } else {
+    // First arg is ApiPetStats; use as stats and create minimal lb data
+    petStats = lbOrStats as ApiPetStats
+  }
+
   // Convert recent races to RaceResult (conditions unknown — use empty factionStretchMix)
-  const history: RaceResult[] = (stats?.recent ?? [])
+  const history: RaceResult[] = (petStats?.recent ?? [])
     .filter(r => r.rank !== null && r.phase === 3) // only resolved races
     .map(r => ({
       raceId: String(r.raceId),
@@ -38,14 +53,28 @@ export function buildPetSnapshot(
       fieldSize: 8,             // default; not available from pet stats endpoint
     }))
 
-  return {
-    petId: lb.petId,
-    rarity: rarityFromInt(lb.rarity),
-    faction: factionFromInt(lb.faction),
-    gender: lb.gender.toLowerCase() as 'male' | 'female',
-    elo: lb.elo,
-    racesRun: lb.racesRun,
-    history,
+  if (lb) {
+    // Full snapshot from leaderboard
+    return {
+      petId: lb.petId,
+      rarity: rarityFromInt(lb.rarity),
+      faction: factionFromInt(lb.faction),
+      gender: lb.gender.toLowerCase() as 'male' | 'female',
+      elo: lb.elo,
+      racesRun: lb.racesRun,
+      history,
+    }
+  } else {
+    // Minimal snapshot from stats alone (with unknowns)
+    return {
+      petId: petStats!.petId,
+      rarity: 'uncommon',        // unknown; default to uncommon
+      faction: 'none',           // unknown; default to none
+      gender: 'male' as const,   // unknown; default to male
+      elo: 1200,                 // unknown; default to baseline ELO
+      racesRun: petStats!.totalRaces,
+      history,
+    }
   }
 }
 
