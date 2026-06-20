@@ -59,8 +59,8 @@ export async function fetchLeaderboard(params?: {
   genders?: string
 }): Promise<{ entries: ApiLeaderboardEntry[]; hasMore: boolean }> {
   const q = new URLSearchParams()
-  if (params?.limit) q.set('limit', String(params.limit))
-  if (params?.offset) q.set('offset', String(params.offset))
+  if (params?.limit !== undefined) q.set('limit', String(params.limit))
+  if (params?.offset !== undefined) q.set('offset', String(params.offset))
   if (params?.factions) q.set('factions', params.factions)
   if (params?.rarities) q.set('rarities', params.rarities)
   if (params?.genders) q.set('genders', params.genders)

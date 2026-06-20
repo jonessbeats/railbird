@@ -40,8 +40,9 @@ export function normalizeFaction(f: string): Faction {
   return map[f?.toLowerCase()] ?? 'none'
 }
 
-export function weiToEth(wei: string): number {
-  return Number(BigInt(wei || '0')) / 1e18
+export function weiToEth(wei: string | null | undefined): number {
+  if (!wei || !/^\d+$/.test(wei)) return 0
+  return Number(BigInt(wei)) / 1e18
 }
 
 export function distanceBucket(trackLength: number): 'short' | 'medium' | 'long' {
