@@ -1,6 +1,6 @@
 // components/WeatherIcon.tsx
 const ICONS: Record<string, string> = {
-  hot: '☀️', cold: '❄️', rainy: '🌧️', snowing: '❄️🌨️',
+  hot: '☀️', cold: '❄️', average: '🌤️', rainy: '🌧️', snowing: '❄️🌨️',
   none: '—', dung: '💩', butterflies: '🦋', all: '🎲',
 }
 
