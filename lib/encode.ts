@@ -1,5 +1,5 @@
 // lib/encode.ts
-import type { Faction, Rarity } from '@/types/racing'
+import type { Faction, Rarity, Weather, ItemsMode } from '@/types/racing'
 
 // Faction integer → string (leaderboard returns integers; spec §2.5 IDs confirmed correct)
 const FACTION_INT_MAP: Record<number, Faction> = {
@@ -10,6 +10,28 @@ const FACTION_INT_MAP: Record<number, Faction> = {
 // Rarity integer → string (1-indexed from live leaderboard: 1=uncommon…6=giga)
 const RARITY_INT_MAP: Record<number, Rarity> = {
   1: 'uncommon', 2: 'rare', 3: 'epic', 4: 'legendary', 5: 'relic', 6: 'giga',
+}
+
+// Items mode mapping
+const ITEMS_MAP: Record<number, ItemsMode> = { 0: 'none', 1: 'dung', 2: 'butterflies', 3: 'all' }
+
+// Weather mapping
+const WEATHER_MAP: Record<number, Weather> = { 0: 'hot', 1: 'cold', 2: 'average', 3: 'snowing' }
+
+export function decodeExtraParams(ids: number[], vals: number[]): {
+  itemsMode: ItemsMode; weather: Weather | null; faction: Faction | null
+} {
+  let itemsMode: ItemsMode = 'none'
+  let weather: Weather | null = null
+  let faction: Faction | null = null
+
+  for (let i = 0; i < ids.length; i++) {
+    const id = ids[i]; const val = vals[i]
+    if (id === 100) itemsMode = ITEMS_MAP[val] ?? 'none'
+    else if (id === 200) weather = WEATHER_MAP[val] ?? null
+    else if (id === 300) faction = FACTION_INT_MAP[val] ?? null
+  }
+  return { itemsMode, weather, faction }
 }
 
 export function factionFromInt(n: number): Faction {
