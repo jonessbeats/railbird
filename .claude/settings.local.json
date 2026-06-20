@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"/c/Users/dmitr/Downloads/RAILBIRD_TZ.md.bak\" \"/c/Users/dmitr/Downloads/railbird/RAILBIRD_TZ.md\")",
+      "Bash(cp -r \"/c/Users/dmitr/Downloads/railbird_docs_bak\" \"/c/Users/dmitr/Downloads/railbird/docs\")",
+      "Bash(npm install *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
