@@ -33,7 +33,7 @@ export async function previewPayouts(raceId: number | string): Promise<PayoutPre
       args: [id],
     }) as readonly [number, bigint, bigint, bigint, bigint, bigint, readonly bigint[], readonly bigint[]]
 
-    const [_phase, entryFee, _prizePool, fieldSize] = raceData
+    const [, entryFee, , fieldSize] = raceData
 
     return {
       entryFee: entryFee.toString(),

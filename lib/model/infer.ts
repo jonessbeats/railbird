@@ -1,6 +1,6 @@
 // lib/model/infer.ts
 import type { ApiLeaderboardEntry, ApiPetStats, PetSnapshot, RaceResult } from '@/types/racing'
-import { rarityFromInt, factionFromInt, normalizeRarity, normalizeFaction } from '@/lib/encode'
+import { rarityFromInt, factionFromInt } from '@/lib/encode'
 
 // Returns 0–100: how much of the stat profile has been revealed
 // Based on racesRun vs maxRaces and revealsPerStat thresholds

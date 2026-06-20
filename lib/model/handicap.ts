@@ -1,6 +1,6 @@
 // lib/model/handicap.ts
 import type { HandicapResult } from '@/types/racing'
-import { rarityOrdinal, weiToEth, distanceBucket, statScoreForDistance } from '@/lib/encode'
+import { rarityOrdinal, weiToEth, statScoreForDistance } from '@/lib/encode'
 import { type PetSnapshotWithStats, smoothedWinRate } from './infer'
 
 const BETA = 1.5      // softmax temperature

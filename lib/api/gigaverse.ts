@@ -24,7 +24,8 @@ export async function fetchRaces(limit = 50): Promise<ApiRaceSummary[]> {
 
 export async function fetchRace(raceId: number | string): Promise<ApiRaceDetail> {
   const data = await apiFetch<{ success: boolean } & ApiRaceDetail>(`/race/${raceId}`)
-  const { success: _s, ...race } = data
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { success, ...race } = data
   return race as ApiRaceDetail
 }
 
