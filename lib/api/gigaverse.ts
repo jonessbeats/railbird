@@ -150,6 +150,29 @@ export async function fetchScheduled(): Promise<ApiRaceSummary[]> {
   return data.races ?? []
 }
 
+// Page through lobby/sync collecting RESOLVED races (with finalRanking) up to `target`.
+export async function fetchResolvedRaces(target = 300, maxPages = 30): Promise<ApiRaceSummary[]> {
+  const out: ApiRaceSummary[] = []
+  let cursor: string | undefined
+  for (let i = 0; i < maxPages && out.length < target; i++) {
+    let res: ApiLobbySyncResponse
+    try {
+      res = await fetchLobbySync(cursor)
+    } catch {
+      break
+    }
+    const pages = [...(res.races ?? []), ...(res.recentWinnerRaces ?? [])]
+    for (const r of pages) {
+      if (r.phaseName === 'RESOLVED' && r.finalRanking && r.finalRanking.length > 0) out.push(r)
+    }
+    if (!res.pageInfo?.hasMore || !res.pageInfo?.nextCursor) break
+    cursor = res.pageInfo.nextCursor
+  }
+  // De-dupe by raceId (recentWinnerRaces can overlap pages)
+  const seen = new Set<number>()
+  return out.filter(r => (seen.has(r.raceId) ? false : (seen.add(r.raceId), true))).slice(0, target)
+}
+
 export async function fetchGlobalStats(): Promise<ApiGlobalStats> {
   const data = await apiFetch<{ success: boolean; data: ApiGlobalStats }>('/stats')
   return data.data
