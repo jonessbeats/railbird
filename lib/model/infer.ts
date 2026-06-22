@@ -85,6 +85,8 @@ export interface PetSnapshotWithStats extends PetSnapshot {
   speedRange: { min: number; max: number }
   staminaRange: { min: number; max: number }
   finishRange: { min: number; max: number }
+  wins: number         // total lifetime wins from lb.wins (NOT history count)
+  podiums: number      // total lifetime podiums from stats.podiums
   winRate: number      // wins / racesRun (0-1)
   podiumRate: number   // podiums / racesRun (0-1)
   revealPct: number    // 0-100
@@ -98,16 +100,43 @@ export function buildPetSnapshotWithStats(
   const base = buildPetSnapshot(lb, stats)
   const pub = lb.racePublic
   const racesRun = lb.racesRun || 1
+  const wins = lb.wins   // authoritative total from leaderboard
+  const podiums = stats?.podiums ?? 0
   return {
     ...base,
     startRange: pub?.startRange ?? { min: 50, max: 100 },
     speedRange: pub?.speedRange ?? { min: 50, max: 100 },
     staminaRange: pub?.staminaRange ?? { min: 50, max: 100 },
     finishRange: pub?.finishRange ?? { min: 50, max: 100 },
-    winRate: lb.wins / racesRun,
-    podiumRate: (stats?.podiums ?? 0) / racesRun,
+    wins,
+    podiums,
+    winRate: wins / racesRun,
+    podiumRate: podiums / racesRun,
     revealPct: revealPercent(lb),
     traits: pub?.traits ?? [],
+  }
+}
+
+// Fallback: build a snapshot from pet stats alone, for pets not found on the
+// leaderboard (beyond the scan cap). Uses baseline ELO and unrevealed stat ranges —
+// the projection is rougher but lets the user's own pet still appear.
+export function buildSnapshotFromStats(stats: ApiPetStats): PetSnapshotWithStats {
+  const base = buildPetSnapshot(stats)   // minimal snapshot path (ELO 1200 default)
+  const racesRun = stats.totalRaces || 1
+  const wins = stats.wins ?? 0
+  const podiums = stats.podiums ?? 0
+  return {
+    ...base,
+    startRange:   { min: 50, max: 100 },
+    speedRange:   { min: 50, max: 100 },
+    staminaRange: { min: 50, max: 100 },
+    finishRange:  { min: 50, max: 100 },
+    wins,
+    podiums,
+    winRate:    wins / racesRun,
+    podiumRate: podiums / racesRun,
+    revealPct:  0,
+    traits:     [],
   }
 }
 
