@@ -41,8 +41,12 @@ export function normalizeFaction(f: string): Faction {
 }
 
 export function weiToEth(wei: string | null | undefined): number {
-  if (!wei || !/^\d+$/.test(wei)) return 0
-  return Number(BigInt(wei)) / 1e18
+  if (!wei) return 0
+  try {
+    return Number(BigInt(wei)) / 1e18
+  } catch {
+    return 0
+  }
 }
 
 export function distanceBucket(trackLength: number): 'short' | 'medium' | 'long' {
