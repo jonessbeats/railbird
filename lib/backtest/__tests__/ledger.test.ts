@@ -62,3 +62,35 @@ test('gradePending settles resolved, drops cancelled, leaves open', async () => 
     await fs.rm(file, { force: true })
   }
 })
+
+// Regression: the /race/{id} detail endpoint returns numeric `phase` but NO string
+// `phaseName`. Grading must key off `phase`/`finalRanking`, not `phaseName`.
+test('gradePending grades detail-shaped races without phaseName (numeric phase)', async () => {
+  const file = path.join(os.tmpdir(), `railbird-ledger-${Date.now()}-d.json`)
+  const store = new FileLedgerStore(file)
+  try {
+    await store.recordPrediction(buildPrediction(
+      race({ raceId: 1 }), [{ petId: 1, winProb: 0.6, evEnter: null }, { petId: 2, winProb: 0.4, evEnter: null }], null, 1))
+    await store.recordPrediction(buildPrediction(
+      race({ raceId: 2 }), [{ petId: 1, winProb: 0.6, evEnter: null }, { petId: 2, winProb: 0.4, evEnter: null }], null, 1))
+
+    const fetchRaceById = async (id: number): Promise<ApiRaceSummary> => {
+      // Simulate the detail endpoint: phaseName stripped out entirely.
+      if (id === 1) {
+        const r = race({ raceId: 1, phase: 3, finalRanking: [1, 2] })
+        delete (r as Partial<ApiRaceSummary>).phaseName
+        return r
+      }
+      const r = race({ raceId: 2, phase: 4 })   // cancelled, numeric
+      delete (r as Partial<ApiRaceSummary>).phaseName
+      return r
+    }
+
+    const graded = await gradePending(store, fetchRaceById)
+    assert.equal(graded, 1)                              // race 1 graded via finalRanking
+    assert.equal((await store.getGraded()).length, 1)
+    assert.equal((await store.getPending()).length, 0)   // race 2 (phase 4) dropped
+  } finally {
+    await fs.rm(file, { force: true })
+  }
+})

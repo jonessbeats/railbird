@@ -40,11 +40,16 @@ export async function gradePending(
     } catch {
       continue                                   // transient fetch failure → retry next run
     }
-    if (race.phaseName === 'CANCELLED') {
+    // NB: the /race/{id} detail endpoint returns numeric `phase` but NOT the string
+    // `phaseName` (that only exists on the /races list), so we must not rely on
+    // phaseName here. Cancelled = phase 4; resolved is signalled by finalRanking
+    // being populated (the definitive "result is in" marker).
+    const cancelled = race.phase === 4 || race.phaseName === 'CANCELLED'
+    if (cancelled) {
       await store.removePending(rec.raceId, rec.modelVersion)
       continue
     }
-    if (race.phaseName === 'RESOLVED' && race.finalRanking && race.finalRanking.length > 0) {
+    if (race.finalRanking && race.finalRanking.length > 0) {
       await store.addGraded(buildGradedRecord(rec, race.finalRanking, 'ledger'))
       await store.removePending(rec.raceId, rec.modelVersion)
       graded++
