@@ -72,7 +72,7 @@ export function MyPetCardWrap({ raceId, children }: { raceId: number; children: 
 
   return (
     <div
-      className="relative rounded-sm transition-all"
+      className="relative rounded-sm transition-all h-full"
       style={{ boxShadow: `0 0 0 1.5px ${style.color}, 0 0 18px ${style.glow}` }}
     >
       <div

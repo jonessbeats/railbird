@@ -32,8 +32,8 @@ export function RaceCard({ race, handicaps, pets, analysis }: RaceCardProps) {
   const fee      = weiToEth(race.entryFee)
 
   return (
-    <Link href={`/race/${race.raceId}`} className="block cursor-pointer group">
-      <div className={`p-4 transition-all duration-200 ${
+    <Link href={`/race/${race.raceId}`} className="block h-full cursor-pointer group">
+      <div className={`p-4 h-full transition-all duration-200 ${
         hasEdge ? 'retro-panel-edge hover:bg-neon-green/5' : 'retro-panel hover:border-game-muted'
       }`}>
 
