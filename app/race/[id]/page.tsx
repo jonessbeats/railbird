@@ -94,6 +94,11 @@ export default async function RaceDetailPage({ params }: { params: { id: string 
     : race.trackLength <= 1500 ? 'MID-DIST'
     : 'STAMINA'
   const raceTrackType = classifyTrack(race.trackLength)
+  // Win% is normalised over pets that have ALREADY joined, so a partly-empty field
+  // inflates them (1 entrant => 100%). Warn until the field fills.
+  const filledCount = race.petCount ?? petIds.length
+  const fieldNotFull = phase === 'OPEN' && race.fieldSize > 0 && filledCount < race.fieldSize
+  const fillRatio = race.fieldSize > 0 ? filledCount / race.fieldSize : 1
 
   return (
     <div>
@@ -152,6 +157,26 @@ export default async function RaceDetailPage({ params }: { params: { id: string 
           </div>
         </div>
       </div>
+
+      {/* ── PROVISIONAL-ODDS WARNING (field not full) ── */}
+      {fieldNotFull && (
+        <div className="mb-6 retro-panel px-4 py-3 border-neon-gold/40 bg-neon-gold/5">
+          <div className="flex items-start gap-2">
+            <span className="text-neon-gold text-sm leading-none mt-0.5">⚠</span>
+            <div className="text-[11px] leading-relaxed tracking-wide">
+              <span className="text-neon-gold font-bold uppercase tracking-widest">
+                Field filling · {filledCount}/{race.fieldSize}
+              </span>
+              <span className="text-game-muted">
+                {' '}— win% are provisional. The model splits probability across pets that
+                have joined so far, so they read high while the field is partly empty
+                {fillRatio < 0.5 ? ' (very rough right now)' : ''}. They sharpen as the
+                field fills — near-final once it&apos;s nearly full.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── FINAL RESULTS ── */}
       {race.finalRanking && race.finalRanking.length > 0 && (
