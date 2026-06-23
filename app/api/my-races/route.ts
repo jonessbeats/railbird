@@ -24,6 +24,7 @@ export interface MyRaceProjection {
   gridPos:     number
   gridTotal:   number
   recommend:   'in' | 'enter' | 'contender' | 'skip'
+  provisional: boolean         // field too sparse for a trustworthy winProb (inflated)
 }
 
 export interface PetProjections {
@@ -73,7 +74,12 @@ function projectPet(
     const entryFeeEth = weiToEth(race.entryFee)
     const evEth       = myH.evEnter ?? null
     const gridPos     = sorted.findIndex(h => h.petId === petId) + 1
-    const isContender = myH.winProb >= CONTENDER_WIN
+    // winProb is normalised over pets currently in the field, so a near-empty race
+    // inflates it (e.g. 1 entrant => 100%). Flag as provisional when too sparse.
+    const projectedFill = alreadyIn ? participantIds.length : participantIds.length + 1
+    const provisional = field.length < 3
+      || (race.fieldSize > 0 && projectedFill / race.fieldSize < 0.6)
+    const isContender = !provisional && myH.winProb >= CONTENDER_WIN
 
     let recommend: MyRaceProjection['recommend']
     if (alreadyIn) {
@@ -100,6 +106,7 @@ function projectPet(
       gridPos,
       gridTotal:   sorted.length,
       recommend,
+      provisional,
     })
   }
 

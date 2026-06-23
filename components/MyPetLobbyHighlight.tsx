@@ -81,8 +81,12 @@ export function MyPetCardWrap({ raceId, children }: { raceId: number; children: 
       >
         <span>◉ #{proj.petId}</span>
         <span className="opacity-80">· {style.label}</span>
-        <span className="opacity-80">· {winPct}%</span>
-        {hasEv && <span className="opacity-80">· +EV</span>}
+        {proj.provisional
+          ? <span className="opacity-80">· FILLING {proj.fieldSize}/{proj.fieldCap}</span>
+          : <>
+              <span className="opacity-80">· {winPct}%</span>
+              {hasEv && <span className="opacity-80">· +EV</span>}
+            </>}
       </div>
       {children}
     </div>
