@@ -9,9 +9,24 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        mono: ['"Space Mono"', 'monospace'],
+      },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        neon: {
+          green: '#00ff88',
+          cyan:  '#00cfff',
+          pink:  '#ff2d6b',
+          gold:  '#ffd700',
+          purple:'#b06aff',
+        },
+        game: {
+          bg:      '#08080f',
+          surface: '#0d0d1a',
+          panel:   '#111128',
+          border:  '#1e1e3a',
+          muted:   '#3a3a5c',
+        },
       },
     },
   },

@@ -1,15 +1,84 @@
-/* app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
 :root {
-  --background: #0a0a0f;
-  --foreground: #e8e8f0;
+  --background: #08080f;
+  --foreground: #d0d0e8;
+  --neon-green: #00ff88;
+  --neon-cyan:  #00cfff;
+  --neon-pink:  #ff2d6b;
+  --neon-gold:  #ffd700;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Subtle scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.06) 3px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+@layer utilities {
+  /* Neon text glows */
+  .neon-green {
+    color: var(--neon-green);
+    text-shadow: 0 0 8px var(--neon-green), 0 0 20px rgba(0,255,136,0.3);
+  }
+  .neon-cyan {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px var(--neon-cyan), 0 0 20px rgba(0,207,255,0.3);
+  }
+  .neon-pink {
+    color: var(--neon-pink);
+    text-shadow: 0 0 8px var(--neon-pink), 0 0 20px rgba(255,45,107,0.3);
+  }
+  .neon-gold {
+    color: var(--neon-gold);
+    text-shadow: 0 0 8px var(--neon-gold), 0 0 20px rgba(255,215,0,0.3);
+  }
+
+  /* Neon box glows */
+  .glow-green { box-shadow: 0 0 0 1px rgba(0,255,136,0.5), 0 0 12px rgba(0,255,136,0.15); }
+  .glow-cyan  { box-shadow: 0 0 0 1px rgba(0,207,255,0.5), 0 0 12px rgba(0,207,255,0.15); }
+  .glow-pink  { box-shadow: 0 0 0 1px rgba(255,45,107,0.5), 0 0 12px rgba(255,45,107,0.15); }
+
+  /* Pixel-sharp (no radius) */
+  .pixel { border-radius: 0 !important; }
+
+  /* Retro panel */
+  .retro-panel {
+    background: #0d0d1a;
+    border: 1px solid #1e1e3a;
+  }
+  .retro-panel-edge {
+    background: #0a1a12;
+    border: 1px solid rgba(0,255,136,0.35);
+    box-shadow: 0 0 16px rgba(0,255,136,0.06);
+  }
+
+  /* Blinking cursor/dot */
+  .blink {
+    animation: blink 1.2s step-end infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
 }
