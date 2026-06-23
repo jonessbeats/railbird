@@ -3,7 +3,15 @@ import type { HandicapResult } from '@/types/racing'
 import { rarityOrdinal, weiToEth, statScoreForDistance } from '@/lib/encode'
 import { type PetSnapshotWithStats, smoothedWinRate } from './infer'
 
-const BETA = 1.5      // softmax temperature
+// Softmax temperature applied to z-scored strength. (Was effectively divided by 1000
+// against z-scores, which flattened every field to ~uniform — the model picked the
+// right favorite but reported near-equal probabilities. Tuned via backtest calibration.)
+// Read at call time so it can be tuned via env without rebuilds.
+function getBeta(): number {
+  // 1.2 tuned on the retro backtest: favorite's stated prob (~56%) ≈ its real win
+  // rate (~55%), best log-loss, hit-rate preserved.
+  return Number(process.env.HANDICAP_BETA ?? '1.2') || 1.2
+}
 
 // Compute base strength score S_i for one pet given race conditions
 function baseStrength(pet: PetSnapshotWithStats, trackLength: number): number {
@@ -35,7 +43,7 @@ function baseStrength(pet: PetSnapshotWithStats, trackLength: number): number {
 // Softmax over field scores
 function softmax(scores: number[], beta: number): number[] {
   const max = Math.max(...scores)
-  const exps = scores.map(s => Math.exp(beta * (s - max) / 1000))
+  const exps = scores.map(s => Math.exp(beta * (s - max)))
   const sum = exps.reduce((a, b) => a + b, 0)
   return exps.map(e => e / sum)
 }
@@ -72,7 +80,7 @@ export function handicap(
   const std = Math.sqrt(variance) || 1
   const zScores = scores.map(s => (s - mean) / std)
 
-  const winProbs = softmax(zScores, BETA)
+  const winProbs = softmax(zScores, getBeta())
 
   const entryFeeEth = weiToEth(entryFeeWei)
   const prizePoolEth = weiToEth(prizePoolWei)

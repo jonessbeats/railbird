@@ -5,6 +5,7 @@ import { handicap } from '@/lib/model/handicap'
 import { predictRace } from './predict'
 import { buildGradedRecord } from './grade'
 import { buildPrediction } from './ledger'
+import { effectivePoolWei } from '@/lib/encode'
 import type { ApiRaceSummary, ApiLeaderboardEntry } from '@/types/racing'
 import type { PetSnapshotWithStats } from '@/lib/model/infer'
 import type { GradedRecord } from './types'
@@ -25,13 +26,17 @@ export function replayResolvedRace(
   const coverage = race.fieldSize > 0 ? pets.length / race.fieldSize : 0
   if (pets.length < 2 || coverage < MIN_COVERAGE) return null
 
-  const handicaps = handicap(pets, race.trackLength, race.entryFee, race.payoutBps, race.pool)
+  const poolWei = effectivePoolWei(
+    race.pool, race.entryFee, race.petCount, race.protocolFeeBps + race.creatorFeeBps,
+  )
+  const handicaps = handicap(pets, race.trackLength, race.entryFee, race.payoutBps, poolWei)
   const { picks, edgePetId, eloPickPetId } = predictRace(
     handicaps,
     pets.map(p => ({ petId: p.petId, elo: p.elo })),
   )
   const pred = buildPrediction(
-    race, picks, edgePetId, eloPickPetId, race.raceStart || Math.floor(Date.now() / 1000),
+    { ...race, pool: poolWei }, picks, edgePetId, eloPickPetId,
+    race.raceStart || Math.floor(Date.now() / 1000),
   )
   return buildGradedRecord(pred, race.finalRanking, 'retro')
 }

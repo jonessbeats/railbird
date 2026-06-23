@@ -2,6 +2,7 @@ import { fetchLeaderboardParallel, fetchPetsStatsBatch } from '@/lib/api/gigaver
 import { buildPetSnapshotWithStats } from '@/lib/model/infer'
 import { handicap } from '@/lib/model/handicap'
 import { analyzeRace } from '@/lib/model/analyze'
+import { effectivePoolWei } from '@/lib/encode'
 import type { ApiRaceSummary } from '@/types/racing'
 import type { PetSnapshotWithStats } from '@/lib/model/infer'
 import type { RaceAnalysis } from '@/lib/model/analyze'
@@ -46,8 +47,11 @@ export async function enrichRaces(
     try {
       const petIds = race.entries.map(e => e.petId)
       const pets = petIds.map(id => snapshotMap.get(id)).filter(Boolean) as PetSnapshotWithStats[]
+      const poolWei = effectivePoolWei(
+        race.pool, race.entryFee, race.petCount, race.protocolFeeBps + race.creatorFeeBps,
+      )
       const handicaps = pets.length >= 2
-        ? handicap(pets, race.trackLength, race.entryFee, race.payoutBps, race.pool)
+        ? handicap(pets, race.trackLength, race.entryFee, race.payoutBps, poolWei)
         : []
       const analysis = analyzeRace(handicaps, pets, race.trackLength, race.entries.length)
       return { race, handicaps, pets, analysis }

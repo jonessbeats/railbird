@@ -49,6 +49,25 @@ export function weiToEth(wei: string | null | undefined): number {
   }
 }
 
+// The off-chain API reports prize pool `pool` as "0" for most races (the real pool
+// lives on-chain). When it's missing, derive it from entry fees: entryFee × entrants,
+// net of protocol+creator fees. Without this, EV/EDGE is always negative (payout = 0).
+export function effectivePoolWei(
+  poolWei: string | null | undefined,
+  entryFeeWei: string | null | undefined,
+  petCount: number,
+  feeBps = 0,
+): string {
+  if (poolWei && poolWei !== '0') return poolWei
+  try {
+    const gross = BigInt(entryFeeWei || '0') * BigInt(Math.max(petCount, 0))
+    const net = gross - (gross * BigInt(Math.max(feeBps, 0))) / 10000n
+    return (net > 0n ? net : 0n).toString()
+  } catch {
+    return '0'
+  }
+}
+
 export function distanceBucket(trackLength: number): 'short' | 'medium' | 'long' {
   if (trackLength <= 400) return 'short'
   if (trackLength <= 800) return 'medium'

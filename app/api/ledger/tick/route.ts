@@ -9,6 +9,7 @@ import { handicap } from '@/lib/model/handicap'
 import { predictRace } from '@/lib/backtest/predict'
 import { buildPrediction, gradePending } from '@/lib/backtest/ledger'
 import { getStore } from '@/lib/backtest/store'
+import { effectivePoolWei } from '@/lib/encode'
 import type { ApiLeaderboardEntry } from '@/types/racing'
 import type { PetSnapshotWithStats } from '@/lib/model/infer'
 
@@ -35,11 +36,14 @@ async function snapshotOpenRaces(): Promise<number> {
       .map(e => snap.get(e.petId))
       .filter((p): p is PetSnapshotWithStats => Boolean(p))
     if (pets.length < 2) continue
-    const handicaps = handicap(pets, race.trackLength, race.entryFee, race.payoutBps, race.pool)
+    const poolWei = effectivePoolWei(
+      race.pool, race.entryFee, race.petCount, race.protocolFeeBps + race.creatorFeeBps,
+    )
+    const handicaps = handicap(pets, race.trackLength, race.entryFee, race.payoutBps, poolWei)
     const { picks, edgePetId, eloPickPetId } = predictRace(
       handicaps, pets.map(p => ({ petId: p.petId, elo: p.elo })),
     )
-    await store.recordPrediction(buildPrediction(race, picks, edgePetId, eloPickPetId))
+    await store.recordPrediction(buildPrediction({ ...race, pool: poolWei }, picks, edgePetId, eloPickPetId))
     recorded++
   }
   return recorded

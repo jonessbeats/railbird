@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { fetchRace, fetchPetsStatsBatch, fetchLeaderboardForPets } from '@/lib/api/gigaverse'
 import { buildPetSnapshotWithStats } from '@/lib/model/infer'
 import { handicap } from '@/lib/model/handicap'
-import { weiToEth } from '@/lib/encode'
+import { weiToEth, effectivePoolWei } from '@/lib/encode'
 import { PetCard } from '@/components/PetCard'
 import { PayoutPreview } from '@/components/PayoutPreview'
 import { WeatherIcon } from '@/components/WeatherIcon'
@@ -41,11 +41,14 @@ export default async function RaceDetailPage({ params }: { params: { id: string 
     ? race.entries.map(e => e.petId)
     : (race.racePets ?? [])
 
-  const prizePoolEth = weiToEth(race.pool ?? '0')
+  const poolWei = effectivePoolWei(
+    race.pool, race.entryFee, race.petCount, (race.protocolFeeBps ?? 0) + (race.creatorFeeBps ?? 0),
+  )
+  const prizePoolEth = weiToEth(poolWei)
   const payoutPreview: PayoutPreviewType = {
     entryFee: race.entryFee ?? '0',
     fieldSize: race.fieldSize,
-    prizePool: race.pool ?? '0',
+    prizePool: poolWei,
     payouts: (race.payoutBps ?? []).map((bps, i) => ({
       rank: i + 1,
       amount: String(BigInt(Math.round((bps / 10000) * prizePoolEth * 1e18))),
@@ -76,7 +79,7 @@ export default async function RaceDetailPage({ params }: { params: { id: string 
   }
 
   const handicaps = snapshots.length > 0
-    ? handicap(snapshots, race.trackLength, race.entryFee ?? '0', race.payoutBps ?? [], race.pool ?? '0')
+    ? handicap(snapshots, race.trackLength, race.entryFee ?? '0', race.payoutBps ?? [], poolWei)
     : []
 
   const sortedByWinProb = [...handicaps].sort((a, b) => b.winProb - a.winProb)
