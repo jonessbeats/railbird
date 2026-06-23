@@ -31,9 +31,11 @@ export async function previewPayouts(raceId: number | string): Promise<PayoutPre
       abi: PET_RACING_ABI,
       functionName: 'getRace',
       args: [id],
-    }) as readonly [number, bigint, bigint, bigint, bigint, bigint, readonly bigint[], readonly bigint[]]
+    }) as readonly [number, bigint, bigint, bigint, bigint, bigint, bigint, string, boolean]
 
-    const [, entryFee, , fieldSize] = raceData
+    // getRace return: [phase, raceStart, entryFee, prizePool, fieldSize, filledSlots, trackLength, creator, isPrivate]
+    const entryFee = raceData[2]
+    const fieldSize = raceData[4]
 
     return {
       entryFee: entryFee.toString(),
