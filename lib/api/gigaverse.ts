@@ -7,10 +7,14 @@ import { apiCache, TTL } from './cache'
 
 const BASE = 'https://gigaverse.io/api/racing'
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+// Use Next's persistent data cache (survives serverless cold starts, unlike the
+// in-memory SwrCache layer) so a cold render serves upstream responses from cache
+// instead of re-fetching the whole leaderboard/stats chain. POST requests (lobby/sync)
+// are never cached by Next, so they pass through unaffected.
+async function apiFetch<T>(path: string, init?: RequestInit, revalidate = 10): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
-    cache: 'no-store',
+    next: { revalidate },
   } as RequestInit)
   if (!res.ok) throw new Error(`Gigaverse API ${path} → ${res.status}`)
   return res.json() as Promise<T>

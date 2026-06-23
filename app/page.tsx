@@ -7,7 +7,8 @@ import { enrichRaces } from '@/lib/enrichRaces'
 import type { ApiRaceSummary } from '@/types/racing'
 import type { LobbyRaceSummary } from '@/components/MyPetLobbyStatus'
 
-export const dynamic = 'force-dynamic'
+// ISR: serve cached HTML (survives cold starts), regenerate in the background every 15s.
+export const revalidate = 15
 
 export default async function LobbyPage() {
   let open: ApiRaceSummary[] = []

@@ -9,9 +9,18 @@ import { ReliabilityTable } from '@/components/backtest/ReliabilityTable'
 import { EdgeTrackRecord } from '@/components/backtest/EdgeTrackRecord'
 import { SampleBadge } from '@/components/backtest/SampleBadge'
 import type { GradedRecord } from '@/lib/backtest/types'
+import { unstable_cache } from 'next/cache'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Heavy retro replay (pages ~300 resolved races via POST lobby/sync, which the data
+// cache can't store) — memoize the whole result in Next's persistent cache for 90s so
+// it survives cold starts instead of recomputing on every open.
+const getRetroRecords = unstable_cache(
+  async () => runRetroBacktest(300),
+  ['retro-backtest', MODEL_VERSION],
+  { revalidate: 90 },
+)
+
+export const revalidate = 60
 
 function pct(x: number) { return `${(x * 100).toFixed(1)}%` }
 
@@ -25,7 +34,7 @@ export default async function BacktestPage({
   let records: GradedRecord[] = []
   try {
     if (mode === 'retro') {
-      records = await runRetroBacktest(300)
+      records = await getRetroRecords()
     } else {
       records = (await getStore().getGraded()).filter(r => r.modelVersion === MODEL_VERSION)
     }

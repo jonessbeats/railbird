@@ -4,7 +4,8 @@ import { enrichRaces } from '@/lib/enrichRaces'
 import { weiToEth } from '@/lib/encode'
 import { classifyTrack } from '@/lib/model/trackAffinity'
 
-export const dynamic = 'force-dynamic'
+// ISR: cached HTML served instantly, background-revalidated every 15s.
+export const revalidate = 15
 
 const TYPE_STYLE = {
   edge:      { label: 'EDGE',     color: 'neon-green',  border: 'border-neon-green/40',  bg: 'bg-neon-green/5'  },

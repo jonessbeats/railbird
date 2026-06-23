@@ -14,7 +14,8 @@ import { MyPetLiveOdds } from '@/components/MyPetLiveOdds'
 import { MyPetMarker } from '@/components/MyPetMarker'
 import type { PayoutPreview as PayoutPreviewType, ApiLeaderboardEntry } from '@/types/racing'
 
-export const dynamic = 'force-dynamic'
+// Dynamic param route; cached fetches + 8s revalidate keep live races fresh without re-fetching every hit.
+export const revalidate = 8
 
 const PHASE_MAP: Record<number, string> = {
   0: 'IDLE', 1: 'OPEN', 2: 'RESOLVING', 3: 'RESOLVED', 4: 'CANCELLED',
