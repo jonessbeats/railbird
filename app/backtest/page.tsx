@@ -17,12 +17,15 @@ import { unstable_cache } from 'next/cache'
 // slowly (resolved races accrue gradually), and a smaller sample keeps the cold
 // (cache-miss) compute bounded without materially changing the calibration.
 const getRetroRecords = unstable_cache(
-  async () => runRetroBacktest(120),
-  ['retro-backtest', MODEL_VERSION],
+  async () => runRetroBacktest(300),
+  ['retro-backtest-300', MODEL_VERSION],
   { revalidate: 600 },
 )
 
 export const revalidate = 60
+// The cold (cache-miss) retro compute over ~300 races + leaderboard scans can take
+// ~15-25s; allow up to 60s (Vercel Hobby max) so it never times out. Cached 10 min.
+export const maxDuration = 60
 
 function pct(x: number) { return `${(x * 100).toFixed(1)}%` }
 
