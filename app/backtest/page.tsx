@@ -17,8 +17,8 @@ import { unstable_cache } from 'next/cache'
 // slowly (resolved races accrue gradually), and a smaller sample keeps the cold
 // (cache-miss) compute bounded without materially changing the calibration.
 const getRetroRecords = unstable_cache(
-  async () => runRetroBacktest(300),
-  ['retro-backtest-300', MODEL_VERSION],
+  async () => runRetroBacktest(600),
+  ['retro-backtest-600', MODEL_VERSION],
   { revalidate: 600 },
 )
 

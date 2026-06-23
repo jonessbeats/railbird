@@ -42,7 +42,9 @@ export function replayResolvedRace(
 }
 
 export async function runRetroBacktest(target = 300): Promise<GradedRecord[]> {
-  const races = await fetchResolvedRaces(target)
+  // Deeper pagination so large targets can actually be reached (default maxPages=30
+  // caps well below 600); fetchResolvedRaces stops early once it runs out of history.
+  const races = await fetchResolvedRaces(target, 60)
   const entrantIds = [...new Set(races.flatMap(r => r.entries.map(e => e.petId)))]
   if (entrantIds.length === 0) return []
 
