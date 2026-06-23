@@ -1,0 +1,32 @@
+name: Ledger keeper
+
+# Keeps the forward (live) ledger growing without a paid scheduler:
+# every ~15 min it records predictions on currently-open races and grades any
+# that have since resolved. Output (recorded/graded counts) shows in the run log.
+# Runs from the default branch (master). Trigger manually via "Run workflow" too.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ledger-keeper
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      BASE: https://railbird-eight.vercel.app
+    steps:
+      - name: Record predictions on open races
+        run: |
+          echo "snapshot:"
+          curl -sS --retry 2 --max-time 90 "$BASE/api/ledger/snapshot"
+          echo
+      - name: Grade predictions whose races have resolved
+        run: |
+          echo "grade:"
+          curl -sS --retry 2 --max-time 90 "$BASE/api/ledger/grade"
+          echo
