@@ -11,13 +11,15 @@ import { SampleBadge } from '@/components/backtest/SampleBadge'
 import type { GradedRecord } from '@/lib/backtest/types'
 import { unstable_cache } from 'next/cache'
 
-// Heavy retro replay (pages ~300 resolved races via POST lobby/sync, which the data
-// cache can't store) — memoize the whole result in Next's persistent cache for 90s so
-// it survives cold starts instead of recomputing on every open.
+// Heavy retro replay (pages resolved races via POST lobby/sync + deep leaderboard
+// scans, which the data cache can't fully store) — the cold compute is ~10s+, so
+// memoize the whole result in Next's persistent cache for 10min. Retro metrics move
+// slowly (resolved races accrue gradually), and a smaller sample keeps the cold
+// (cache-miss) compute bounded without materially changing the calibration.
 const getRetroRecords = unstable_cache(
-  async () => runRetroBacktest(300),
+  async () => runRetroBacktest(120),
   ['retro-backtest', MODEL_VERSION],
-  { revalidate: 90 },
+  { revalidate: 600 },
 )
 
 export const revalidate = 60
