@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MyPetNav } from '@/components/MyPetNav'
 import { PetSearch } from '@/components/PetSearch'
+import { MobileGate } from '@/components/MobileGate'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-game-bg text-[#d0d0e8] antialiased font-mono">
+        <MobileGate />
         <nav className="border-b border-game-border bg-game-surface/80 backdrop-blur-sm sticky top-0 z-50 px-6 py-3">
           <div className="max-w-6xl mx-auto flex items-center gap-8">
             <Link href="/" className="font-bold text-xl tracking-widest neon-green uppercase">
